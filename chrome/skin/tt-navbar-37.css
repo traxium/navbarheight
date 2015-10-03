@@ -1,5 +1,5 @@
 /*
- * This file is part of Navigation (Address) Bar Resizer,
+ * This file is part of Nav Bar Resizer,
  * Copyright (C) 2015 Sergey Zelentsov <crayfishexterminator@gmail.com>
  */
 
@@ -22,4 +22,8 @@
 #nav-bar .toolbarbutton-1 > .toolbarbutton-menubutton-dropmarker {
 	padding-top: 0 !important;
 	padding-bottom: 0 !important;
+}
+
+#back-button {
+	padding-left: 3px !important;
 }

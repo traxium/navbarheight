@@ -1,0 +1,13 @@
+<!ENTITY size.title "Navigation bar size:">
+<!ENTITY size.desc "All sizes are relevant only in the Firefox default theme. Selecting &#171;Default&#187; is equivalent of disabling the add-on.">
+<!ENTITY size.25 "25px">
+<!ENTITY size.27 "27px">
+<!ENTITY size.29 "29px">
+<!ENTITY size.31 "31px">
+<!ENTITY size.33 "33px">
+<!ENTITY size.35 "35px">
+<!ENTITY size.37 "37px">
+<!ENTITY size.39 "39px">
+<!ENTITY size.-1 "Default (41px in the default theme)">
+<!ENTITY size.square "(Square back button)">
+<!ENTITY size.round "(Round back button)">
