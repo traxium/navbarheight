@@ -1,0 +1,3 @@
+skin    navbarresizer classic/1.0   chrome/skin/
+locale  navbarresizer en-US chrome/locale/en-US/
+locale  navbarresizer ru    chrome/locale/ru/

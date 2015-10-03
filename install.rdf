@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This file is part of Tab Tree,
+   - Copyright (C) 2015 Sergey Zelentsov <crayfishexterminator@gmail.com> -->
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>{70768549-a666-4368-8efa-6d24ad93777a}</em:id>
+    <em:version>1.0.0</em:version>
+    <em:name>Navigation (Address) Bar Resizer</em:name>
+    <em:description>Shrink it down.</em:description>
+    <em:creator>Sergey Zelentsov</em:creator>
+    <em:homepageURL>https://github.com/traxium/navbarresizer</em:homepageURL>
+    <em:type>2</em:type>
+    <em:bootstrap>true</em:bootstrap>
+    <em:targetApplication>
+      <Description>
+        <!-- Firefox -->
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>26.0</em:minVersion>
+        <em:maxVersion>43.0</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+    <!-- start localizing -->
+    <em:localized>
+      <Description>
+        <em:locale>en-US</em:locale>
+        <em:name>Navigation (Address) Bar Resizer</em:name>
+        <em:description>Shrink it down.</em:description>
+        <em:creator>Sergey Zelentsov</em:creator>
+        <em:homepageURL>https://github.com/traxium/navbarresizer</em:homepageURL>
+        <em:translator>Sergey Zelentsov</em:translator>
+      </Description>
+    </em:localized>
+    <em:localized>
+      <Description>
+        <em:locale>ru</em:locale>
+        <em:name>Navigation (Address) Bar Resizer</em:name>
+        <em:description>Уменьшает толщину адресной строки.</em:description>
+        <em:creator>Зеленцов Сергей</em:creator>
+        <em:homepageURL>https://github.com/traxium/navbarresizer</em:homepageURL>
+        <em:translator>Sergey Zelentsov</em:translator>
+      </Description>
+    </em:localized>
+  </Description>
+</RDF>
