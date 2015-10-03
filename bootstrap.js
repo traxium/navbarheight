@@ -58,6 +58,16 @@ function startup(data, reason)
 	
 	prefObserver.observe(null, "nsPref:changed", "extensions.navbarresizer.size");
 	Services.prefs.addObserver("extensions.navbarresizer.size", prefObserver, false);
+
+	// Add the context menu option into any existing windows:
+	let XULWindows = Services.wm.getXULWindowEnumerator(null);
+	while (XULWindows.hasMoreElements()) {
+		let aXULWindow = XULWindows.getNext();
+		let aDOMWindow = aXULWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+		windowListener.addOption(aDOMWindow);
+	}
+	// Listen to new windows:
+	Services.wm.addListener(windowListener);
 }
 
 function shutdown(aData, aReason)
@@ -70,7 +80,68 @@ function shutdown(aData, aReason)
 			sss.unregisterSheet(x, sss.AUTHOR_SHEET);
 		}
 	});
+
+	//Stop listening:
+	Services.wm.removeListener(windowListener);
+	// Remove the context menu option from any existing windows:
+	let XULWindows = Services.wm.getXULWindowEnumerator(null);
+	while (XULWindows.hasMoreElements()) {
+		let aXULWindow = XULWindows.getNext();
+		let aDOMWindow = aXULWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+		windowListener.removeOption(aDOMWindow);
+	}
 }
 
 function install(aData, aReason) { }
 function uninstall(aData, aReason) { }
+
+var windowListener = {
+	
+	addOption: function (aDOMWindow) {
+		let toolbarContextMenu = aDOMWindow.document.querySelector("#toolbar-context-menu");
+		// #toolbar-context-menu is empty now because its menu items removed and added on every "popupshowing"
+		if (toolbarContextMenu) {
+			let navBarSize = aDOMWindow.document.createElement("menuitem");
+			navBarSize.id = "nbr-size";
+			navBarSize.setAttribute("label", "Navigation Bar size");
+			toolbarContextMenu.appendChild(navBarSize);
+
+			// onViewToolbarsPopupShowing rearranges menu items on "popupshowing"
+			// onpopupshowing="onViewToolbarsPopupShowing(event, document.getElementById('viewToolbarsMenuSeparator'));"
+			// so I have to Proxy it because I want "Navigation Bar size" to be between "Menu Bar" and "Bookmarks Toolbar"
+			aDOMWindow.onViewToolbarsPopupShowing.nbrOriginal = aDOMWindow.onViewToolbarsPopupShowing;
+			aDOMWindow.onViewToolbarsPopupShowing = new Proxy(aDOMWindow.onViewToolbarsPopupShowing, {
+				apply: function(target, thisArg, argumentsList) {
+					target.apply(thisArg, argumentsList); // Returns nothing
+					// Adjust position:
+					let bookmarksToolbar = aDOMWindow.document.querySelector("#toggle_PersonalToolbar");
+					toolbarContextMenu.insertBefore(navBarSize, bookmarksToolbar);
+				}
+			});
+		}
+	},
+
+	removeOption: function (aDOMWindow) {
+		if (!aDOMWindow) {
+			return;
+		}
+		let navBarSize = aDOMWindow.document.querySelector("#nbr-size");
+		if (navBarSize) {
+			navBarSize.parentNode.removeChild(navBarSize);
+			aDOMWindow.onViewToolbarsPopupShowing = aDOMWindow.onViewToolbarsPopupShowing.nbrOriginal; // Removes Proxy
+			delete aDOMWindow.onViewToolbarsPopupShowing.nbrOriginal;
+		}
+	},
+
+	onOpenWindow: function (aXULWindow) {
+		// In Gecko 7.0 nsIDOMWindow2 has been merged into nsIDOMWindow interface.
+		// In Gecko 8.0 nsIDOMStorageWindow and nsIDOMWindowInternal have been merged into nsIDOMWindow interface.
+		let aDOMWindow = aXULWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+		aDOMWindow.addEventListener("load", function onLoad(event) {
+			aDOMWindow.removeEventListener("load", onLoad, false);
+
+			windowListener.addOption(aDOMWindow);
+		}, false);
+	}
+
+};
