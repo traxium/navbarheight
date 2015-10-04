@@ -9,14 +9,14 @@
     <setting type="menulist" pref="extensions.navbarresizer.size" title="&size.title;" desc="&size.desc;">
         <menulist>
             <menupopup>
-                <menuitem value="25" label="&size.25; &size.square;"/>
-                <menuitem value="27" label="&size.27; &size.square;"/>
-                <menuitem value="29" label="&size.29; &size.square;"/>
-                <menuitem value="31" label="&size.31; &size.square;"/>
-                <menuitem value="33" label="&size.33; &size.round;"/>
-                <menuitem value="35" label="&size.35; &size.round;"/>
-                <menuitem value="37" label="&size.37; &size.round;"/>
-                <menuitem value="39" label="&size.39; &size.round;"/>
+                <menuitem value="25" label="&size.25;"/>
+                <menuitem value="27" label="&size.27;"/>
+                <menuitem value="29" label="&size.29;"/>
+                <menuitem value="31" label="&size.31;"/>
+                <menuitem value="33" label="&size.33;"/>
+                <menuitem value="35" label="&size.35;"/>
+                <menuitem value="37" label="&size.37;"/>
+                <menuitem value="39" label="&size.39;"/>
                 <menuseparator />
                 <menuitem value="-1" label="&size.-1;"/>
             </menupopup>

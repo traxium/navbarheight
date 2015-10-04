@@ -30,6 +30,8 @@ var prefObserver = {
 		}
 	}
 };
+// Randomize URI to work around bug 719376:
+var stringBundle = Services.strings.createBundle('chrome://navbarresizer/locale/global.properties?' + Math.random());
 
 function startup(data, reason)
 {
@@ -99,25 +101,57 @@ var windowListener = {
 	
 	addOption: function (aDOMWindow) {
 		let toolbarContextMenu = aDOMWindow.document.querySelector("#toolbar-context-menu");
-		// #toolbar-context-menu is empty now because its menu items removed and added on every "popupshowing"
+		// #toolbar-context-menu is empty when a window is just opened because its menu items removed and added on "popupshowing"
 		if (toolbarContextMenu) {
-			let navBarSize = aDOMWindow.document.createElement("menuitem");
-			navBarSize.id = "nbr-size";
-			navBarSize.setAttribute("label", "Navigation Bar size");
-			toolbarContextMenu.appendChild(navBarSize);
+			let sizeMenu = aDOMWindow.document.createElement("menu");
+			sizeMenu.id = "nbr-size-menu";
+			sizeMenu.setAttribute("label", stringBundle.GetStringFromName("nav_bar_height"));
+			toolbarContextMenu.insertBefore(sizeMenu, toolbarContextMenu.lastElementChild); // Before "Customize..."
 
-			// onViewToolbarsPopupShowing rearranges menu items on "popupshowing"
-			// onpopupshowing="onViewToolbarsPopupShowing(event, document.getElementById('viewToolbarsMenuSeparator'));"
-			// so I have to Proxy it because I want "Navigation Bar size" to be between "Menu Bar" and "Bookmarks Toolbar"
-			aDOMWindow.onViewToolbarsPopupShowing.nbrOriginal = aDOMWindow.onViewToolbarsPopupShowing;
-			aDOMWindow.onViewToolbarsPopupShowing = new Proxy(aDOMWindow.onViewToolbarsPopupShowing, {
-				apply: function(target, thisArg, argumentsList) {
-					target.apply(thisArg, argumentsList); // Returns nothing
-					// Adjust position:
-					let bookmarksToolbar = aDOMWindow.document.querySelector("#toggle_PersonalToolbar");
-					toolbarContextMenu.insertBefore(navBarSize, bookmarksToolbar);
+			let sizePopup = aDOMWindow.document.createElement("menupopup");
+			sizePopup.id = "nbr-size-popup";
+			sizeMenu.appendChild(sizePopup);
+
+			sizes.forEach((x) => {
+				let item = aDOMWindow.document.createElement("menuitem");
+				item.setAttribute("type", "checkbox");
+				item.setAttribute("label", stringBundle.GetStringFromName(x.toString()));
+				sizePopup.appendChild(item);
+			});
+			
+			let menuSeparator = aDOMWindow.document.createElement("menuseparator");
+			sizePopup.appendChild(menuSeparator);
+			
+			let itemDefault = aDOMWindow.document.createElement("menuitem");
+			itemDefault.setAttribute("type", "checkbox");
+			itemDefault.setAttribute("label", stringBundle.GetStringFromName("-1"));
+			sizePopup.appendChild(itemDefault);
+
+			sizePopup.addEventListener("popupshowing", (event) => {
+				// "for...of loops will loop over NodeList objects correctly, in browsers that support for...of (like Firefox 13 and later):"
+				for (let item of event.currentTarget.children) {
+					if (item.localName === "menuitem") {
+						item.setAttribute("checked", "false");
+					}
+				}
+				let pref = Services.prefs.getIntPref("extensions.navbarresizer.size");
+				let idx = sizes.indexOf(pref);
+				if (idx === -1) {
+					event.currentTarget.lastElementChild.setAttribute("checked", "true");
+				} else {
+					event.currentTarget.children[idx].setAttribute("checked", "true");
 				}
 			});
+
+			sizePopup.addEventListener('command', (event) => {
+				if (event.currentTarget.lastElementChild === event.target) {
+					// Default Nav Bar Height:
+					Services.prefs.setIntPref("extensions.navbarresizer.size", -1);
+				} else {
+					let idx = Array.prototype.indexOf.call(event.currentTarget.children, event.target);
+					Services.prefs.setIntPref("extensions.navbarresizer.size", sizes[idx]);
+				}
+			}, false);
 		}
 	},
 
@@ -125,11 +159,9 @@ var windowListener = {
 		if (!aDOMWindow) {
 			return;
 		}
-		let navBarSize = aDOMWindow.document.querySelector("#nbr-size");
-		if (navBarSize) {
-			navBarSize.parentNode.removeChild(navBarSize);
-			aDOMWindow.onViewToolbarsPopupShowing = aDOMWindow.onViewToolbarsPopupShowing.nbrOriginal; // Removes Proxy
-			delete aDOMWindow.onViewToolbarsPopupShowing.nbrOriginal;
+		let sizeMenu = aDOMWindow.document.querySelector("#nbr-size");
+		if (sizeMenu) {
+			sizeMenu.parentNode.removeChild(sizeMenu);
 		}
 	},
 
