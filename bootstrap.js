@@ -1,5 +1,5 @@
 /*
- * This file is part of Nav Bar Resizer,
+ * This file is part of Nav Bar Height,
  * Copyright (C) 2015 Sergey Zelentsov <crayfishexterminator@gmail.com>
  */
 
@@ -11,8 +11,8 @@ const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
 
-var sizes = [25, 27, 29, 31, 33, 35, 37, 39];
-var URIs = sizes.map((x) => Services.io.newURI("chrome://navbarresizer/skin/tt-navbar-" + x + ".css", null, null));
+var sizes = [24, 26, 28, 30, 32, 34, 36, 38];
+var URIs = sizes.map((x) => Services.io.newURI("chrome://navbarheight/skin/tt-navbar-" + x + ".css", null, null));
 var prefObserver = {
 	observe: function(subject, topic, data) {
 		if (topic == "nsPref:changed") {
@@ -22,7 +22,7 @@ var prefObserver = {
 					sss.unregisterSheet(x, sss.AUTHOR_SHEET);
 				}
 			});
-			let pref = Services.prefs.getIntPref("extensions.navbarresizer.size");
+			let pref = Services.prefs.getIntPref("extensions.navbarheight.size");
 			let idx = sizes.indexOf(pref);
 			if (idx !== -1) {
 				sss.loadAndRegisterSheet(URIs[idx], sss.AUTHOR_SHEET);
@@ -31,35 +31,31 @@ var prefObserver = {
 	}
 };
 // Randomize URI to work around bug 719376:
-var stringBundle = Services.strings.createBundle('chrome://navbarresizer/locale/global.properties?' + Math.random());
+var stringBundle = Services.strings.createBundle('chrome://navbarheight/locale/global.properties?' + Math.random());
 
 function startup(data, reason)
 {
 	// default #nav-bar:
 	
-	// 41px total:
-	// 0px border
+	// 40px total:
 	// 8px
 	// 1px border
 	// 22px URL bar
 	// 1px border
 	// 8px
-	// 1px border
 	
 	// Or:
 	
-	// 41px total:
-	// 0px border
+	// 40px total:
 	// 12px
 	// 16px icon
 	// 12px
-	// 1px border
 
-	// #nav-bar size from 25px to 39px:
-	Services.prefs.getDefaultBranch(null).setIntPref("extensions.navbarresizer.size", 27);
+	// #nav-bar size from 24px to 38px:
+	Services.prefs.getDefaultBranch(null).setIntPref("extensions.navbarheight.size", 28);
 	
-	prefObserver.observe(null, "nsPref:changed", "extensions.navbarresizer.size");
-	Services.prefs.addObserver("extensions.navbarresizer.size", prefObserver, false);
+	prefObserver.observe(null, "nsPref:changed", "extensions.navbarheight.size");
+	Services.prefs.addObserver("extensions.navbarheight.size", prefObserver, false);
 
 	// Add the context menu option into any existing windows:
 	let XULWindows = Services.wm.getXULWindowEnumerator(null);
@@ -76,7 +72,7 @@ function shutdown(aData, aReason)
 {
 	if (aReason == APP_SHUTDOWN) return;
 
-	Services.prefs.removeObserver("extensions.navbarresizer.size", prefObserver);
+	Services.prefs.removeObserver("extensions.navbarheight.size", prefObserver);
 	URIs.forEach((x) => {
 		if (sss.sheetRegistered(x, sss.AUTHOR_SHEET)) {
 			sss.unregisterSheet(x, sss.AUTHOR_SHEET);
@@ -104,12 +100,12 @@ var windowListener = {
 		// #toolbar-context-menu is empty when a window is just opened because its menu items removed and added on "popupshowing"
 		if (toolbarContextMenu) {
 			let sizeMenu = aDOMWindow.document.createElement("menu");
-			sizeMenu.id = "nbr-size-menu";
+			sizeMenu.id = "nbh-size-menu";
 			sizeMenu.setAttribute("label", stringBundle.GetStringFromName("nav_bar_height"));
 			toolbarContextMenu.insertBefore(sizeMenu, toolbarContextMenu.lastElementChild); // Before "Customize..."
 
 			let sizePopup = aDOMWindow.document.createElement("menupopup");
-			sizePopup.id = "nbr-size-popup";
+			sizePopup.id = "nbh-size-popup";
 			sizeMenu.appendChild(sizePopup);
 
 			sizes.forEach((x) => {
@@ -134,7 +130,7 @@ var windowListener = {
 						item.setAttribute("checked", "false");
 					}
 				}
-				let pref = Services.prefs.getIntPref("extensions.navbarresizer.size");
+				let pref = Services.prefs.getIntPref("extensions.navbarheight.size");
 				let idx = sizes.indexOf(pref);
 				if (idx === -1) {
 					event.currentTarget.lastElementChild.setAttribute("checked", "true");
@@ -146,10 +142,10 @@ var windowListener = {
 			sizePopup.addEventListener('command', (event) => {
 				if (event.currentTarget.lastElementChild === event.target) {
 					// Default Nav Bar Height:
-					Services.prefs.setIntPref("extensions.navbarresizer.size", -1);
+					Services.prefs.setIntPref("extensions.navbarheight.size", -1);
 				} else {
 					let idx = Array.prototype.indexOf.call(event.currentTarget.children, event.target);
-					Services.prefs.setIntPref("extensions.navbarresizer.size", sizes[idx]);
+					Services.prefs.setIntPref("extensions.navbarheight.size", sizes[idx]);
 				}
 			}, false);
 		}
@@ -159,7 +155,7 @@ var windowListener = {
 		if (!aDOMWindow) {
 			return;
 		}
-		let sizeMenu = aDOMWindow.document.querySelector("#nbr-size");
+		let sizeMenu = aDOMWindow.document.querySelector("#nbh-size");
 		if (sizeMenu) {
 			sizeMenu.parentNode.removeChild(sizeMenu);
 		}

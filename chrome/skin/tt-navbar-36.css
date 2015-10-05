@@ -1,20 +1,18 @@
 /*
- * This file is part of Nav Bar Resizer,
+ * This file is part of Nav Bar Height,
  * Copyright (C) 2015 Sergey Zelentsov <crayfishexterminator@gmail.com>
  */
 
-/* 35px total: */
-/* 0px border */
-/* 5px */
+/* 36px total: */
+/* 6px */
 /* 1px border */
 /* 22px URL bar */
 /* 1px border */
-/* 5px */
-/* 1px border */
+/* 6px */
 
 #urlbar-container {
-	padding-top: 2px !important;
-	padding-bottom: 2px !important;
+	padding-top: 3px !important;
+	padding-bottom: 3px !important;
 }
 
 #nav-bar .toolbarbutton-1:not([type=menu-button]),
@@ -25,5 +23,5 @@
 }
 
 #back-button {
-	padding-left: 2px !important;
+	padding-left: 3px !important;
 }

@@ -1,16 +1,14 @@
 /*
- * This file is part of Nav Bar Resizer,
+ * This file is part of Nav Bar Height,
  * Copyright (C) 2015 Sergey Zelentsov <crayfishexterminator@gmail.com>
  */
 
-/* 31px total: */
-/* 0px border */
-/* 3px */
+/* 28px total: */
+/* 2px */
 /* 1px border */
 /* 22px URL bar */
 /* 1px border */
-/* 3px */
-/* 1px border */
+/* 2px */
 
 /* from devedition.css ************************************************************************************************/
 
@@ -64,10 +62,10 @@ window:not([chromehidden~="toolbar"]) #urlbar-wrapper {
 /* ****************************************************************************************************************** */
 
 #urlbar-container {
-	padding-top: 1px !important;
-	padding-bottom: 1px !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
 }
 
 #back-button {
-	padding-left: 4px !important;
+	padding-left: 3px !important;
 }

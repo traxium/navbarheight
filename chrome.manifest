@@ -1,3 +1,3 @@
-skin    navbarresizer classic/1.0   chrome/skin/
-locale  navbarresizer en-US chrome/locale/en-US/
-locale  navbarresizer ru    chrome/locale/ru/
+skin   navbarheight classic/1.0   chrome/skin/
+locale navbarheight en-US   chrome/locale/en-US/
+locale navbarheight ru      chrome/locale/ru/

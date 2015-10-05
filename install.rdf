@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- This file is part of Nav Bar Resizer,
+<!-- This file is part of Nav Bar Height,
    - Copyright (C) 2015 Sergey Zelentsov <crayfishexterminator@gmail.com> -->
 
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -8,10 +8,10 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>{70768549-a666-4368-8efa-6d24ad93777a}</em:id>
     <em:version>1.0.0</em:version>
-    <em:name>Nav Bar Resizer</em:name>
+    <em:name>Nav Bar Height</em:name>
     <em:description>Shrink it down.</em:description>
     <em:creator>Sergey Zelentsov</em:creator>
-    <em:homepageURL>https://github.com/traxium/navbarresizer</em:homepageURL>
+    <em:homepageURL>https://github.com/traxium/navbarheight</em:homepageURL>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
     <em:targetApplication>
@@ -26,20 +26,20 @@
     <em:localized>
       <Description>
         <em:locale>en-US</em:locale>
-        <em:name>Nav Bar Resizer</em:name>
+        <em:name>Nav Bar Height</em:name>
         <em:description>Shrink it down.</em:description>
         <em:creator>Sergey Zelentsov</em:creator>
-        <em:homepageURL>https://github.com/traxium/navbarresizer</em:homepageURL>
+        <em:homepageURL>https://github.com/traxium/navbarheight</em:homepageURL>
         <em:translator>Sergey Zelentsov</em:translator>
       </Description>
     </em:localized>
     <em:localized>
       <Description>
         <em:locale>ru</em:locale>
-        <em:name>Nav Bar Resizer</em:name>
+        <em:name>Nav Bar Height</em:name>
         <em:description>Уменьшает толщину адресной строки.</em:description>
         <em:creator>Зеленцов Сергей</em:creator>
-        <em:homepageURL>https://github.com/traxium/navbarresizer</em:homepageURL>
+        <em:homepageURL>https://github.com/traxium/navbarheight</em:homepageURL>
         <em:translator>Sergey Zelentsov</em:translator>
       </Description>
     </em:localized>
