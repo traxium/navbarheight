@@ -4,90 +4,66 @@
  */
 
 "use strict";
-/* global Components, Services, APP_SHUTDOWN */
+/* global Components, Services, AddonManager, APP_SHUTDOWN */
 
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 
 Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/AddonManager.jsm");
 const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
 
 var sizes = [24, 26, 28, 30, 32, 34, 36, 38];
 var URIs = sizes.map((x) => Services.io.newURI("chrome://navbarheight/skin/tt-navbar-" + x + ".css", null, null));
-var prefObserver = {
-	observe: function(subject, topic, data) {
-		if (topic == "nsPref:changed") {
-			// unload all:
-			URIs.forEach((x) => {
-				if (sss.sheetRegistered(x, sss.AUTHOR_SHEET)) {
-					sss.unregisterSheet(x, sss.AUTHOR_SHEET);
-				}
-			});
-			let pref = Services.prefs.getIntPref("extensions.navbarheight.size");
-			let idx = sizes.indexOf(pref);
-			if (idx !== -1) {
-				sss.loadAndRegisterSheet(URIs[idx], sss.AUTHOR_SHEET);
-			}
-		}
-	}
-};
+
 // Randomize URI to work around bug 719376:
 var stringBundle = Services.strings.createBundle('chrome://navbarheight/locale/global.properties?' + Math.random());
 
+// default #nav-bar:
+
+// 40px total:
+// 8px
+// 1px border
+// 22px URL bar
+// 1px border
+// 8px
+
+// Or:
+
+// 40px total:
+// 12px
+// 16px icon
+// 12px
+
 function startup(data, reason)
 {
-	// default #nav-bar:
-	
-	// 40px total:
-	// 8px
-	// 1px border
-	// 22px URL bar
-	// 1px border
-	// 8px
-	
-	// Or:
-	
-	// 40px total:
-	// 12px
-	// 16px icon
-	// 12px
-
 	// #nav-bar size from 24px to 38px:
 	Services.prefs.getDefaultBranch(null).setIntPref("extensions.navbarheight.size", 28);
-	
-	prefObserver.observe(null, "nsPref:changed", "extensions.navbarheight.size");
-	Services.prefs.addObserver("extensions.navbarheight.size", prefObserver, false);
 
-	// Add the context menu option into any existing windows:
-	let XULWindows = Services.wm.getXULWindowEnumerator(null);
-	while (XULWindows.hasMoreElements()) {
-		let aXULWindow = XULWindows.getNext();
-		let aDOMWindow = aXULWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
-		windowListener.addOption(aDOMWindow);
-	}
-	// Listen to new windows:
-	Services.wm.addListener(windowListener);
+	// Tab Tree takes priority over this add-on if Tab Tree is installed and enabled
+	AddonManager.getAddonByID("TabsTree@traxium", (aAddon) => {
+		// If an error occurred (such as an add-on not being found), null is passed back instead.
+		if (aAddon && aAddon.isActive) {
+			// If "Tab Tree" is installed and enabled
+			// Do nothing
+			console.log("Do nothing!")
+		} else {
+			// If "Tab Tree" is not installed or disabled:
+			windowListener.startup();
+		}
+
+		AddonManager.addAddonListener(addonListener);
+	});
 }
 
 function shutdown(aData, aReason)
 {
-	if (aReason == APP_SHUTDOWN) return;
-
-	Services.prefs.removeObserver("extensions.navbarheight.size", prefObserver);
-	URIs.forEach((x) => {
-		if (sss.sheetRegistered(x, sss.AUTHOR_SHEET)) {
-			sss.unregisterSheet(x, sss.AUTHOR_SHEET);
-		}
-	});
-
-	//Stop listening:
-	Services.wm.removeListener(windowListener);
-	// Remove the context menu option from any existing windows:
-	let XULWindows = Services.wm.getXULWindowEnumerator(null);
-	while (XULWindows.hasMoreElements()) {
-		let aXULWindow = XULWindows.getNext();
-		let aDOMWindow = aXULWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
-		windowListener.removeOption(aDOMWindow);
+	if (aReason === APP_SHUTDOWN) {
+		return;
 	}
+
+	AddonManager.removeAddonListener(addonListener);
+	
+	windowListener.shutdown();
 }
 
 function install(aData, aReason) { }
@@ -155,9 +131,40 @@ var windowListener = {
 		if (!aDOMWindow) {
 			return;
 		}
-		let sizeMenu = aDOMWindow.document.querySelector("#nbh-size");
+		let sizeMenu = aDOMWindow.document.querySelector("#nbh-size-menu");
 		if (sizeMenu) {
 			sizeMenu.parentNode.removeChild(sizeMenu);
+		}
+	},
+	
+	startup: function () {
+		prefObserver.observe(null, "nsPref:changed", "extensions.navbarheight.size");
+		Services.prefs.addObserver("extensions.navbarheight.size", prefObserver, false);
+		
+		// Add the context menu option into any existing windows:
+		let DOMWindows = Services.wm.getEnumerator("navigator:browser");
+		while (DOMWindows.hasMoreElements()) {
+			this.addOption(DOMWindows.getNext());
+		}
+		// Listen to new windows:
+		Services.wm.addListener(this);
+	},
+	
+	shutdown: function () {
+		// Removing an observer that has already been removed won't do any harm:
+		Services.prefs.removeObserver("extensions.navbarheight.size", prefObserver);
+		URIs.forEach((x) => {
+			if (sss.sheetRegistered(x, sss.AUTHOR_SHEET)) {
+				sss.unregisterSheet(x, sss.AUTHOR_SHEET);
+			}
+		});
+		
+		//Stop listening:
+		Services.wm.removeListener(this);
+		// Remove the context menu option from any existing windows:
+		let DOMWindows = Services.wm.getEnumerator("navigator:browser");
+		while (DOMWindows.hasMoreElements()) {
+			this.removeOption(DOMWindows.getNext());
 		}
 	},
 
@@ -172,4 +179,62 @@ var windowListener = {
 		}, false);
 	}
 
+};
+
+var prefObserver = {
+	
+	observe: function(subject, topic, data) {
+		if (topic == "nsPref:changed") {
+			// unload all:
+			URIs.forEach((x) => {
+				if (sss.sheetRegistered(x, sss.AUTHOR_SHEET)) {
+					sss.unregisterSheet(x, sss.AUTHOR_SHEET);
+				}
+			});
+			let pref = Services.prefs.getIntPref("extensions.navbarheight.size");
+			let idx = sizes.indexOf(pref);
+			if (idx !== -1) {
+				sss.loadAndRegisterSheet(URIs[idx], sss.AUTHOR_SHEET);
+			}
+		}
+	}
+	
+};
+
+var addonListener = {
+	
+	onEnabling: function (aAddon, needsRestart) {
+		if (aAddon.id === "TabsTree@traxium") {
+			// Disable itself:
+			windowListener.shutdown();
+			console.log("Tab Tree is enabling!");
+		}
+	},
+
+	onDisabled: function (aAddon, needsRestart) {
+		if (aAddon.id === "TabsTree@traxium") {
+			// Enable itself:
+			windowListener.startup();
+			console.log("Tab Tree has been disabled!");
+		}
+	},
+
+	// onEnabling doesn't fire when "Tab Tree" is installing
+	// only onInstalling fires (not two events, not onEnabling) when "Tab Tree" is installed
+	onInstalling: function (aAddon, needsRestart) {
+		if (aAddon.id === "TabsTree@traxium") {
+			// Disable itself:
+			windowListener.shutdown();
+			console.log("Tab Tree is installing!");
+		}
+	},
+
+	// Actually it never fires, when "Tab Tree" is removed onDisabled fires (not onUninstalled)
+	// When disabled "Tab Tree" is removed then nothing fires
+	onUninstalled: function (aAddon) {
+		if (aAddon.id === "TabsTree@traxium") {
+			console.log("Tab Tree has been uninstalled!!");
+		}
+	}
+	
 };
