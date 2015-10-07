@@ -14,6 +14,8 @@ const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsISt
 
 var sizes = [24, 26, 28, 30, 32, 34, 36, 38];
 var URIs = sizes.map((x) => Services.io.newURI("chrome://navbarheight/skin/tt-navbar-" + x + ".css", null, null));
+var URIff41fix = Services.io.newURI("chrome://navbarheight/skin/tt-navbar-fix-ff41.css", null, null);
+var URIff43fix = Services.io.newURI("chrome://navbarheight/skin/tt-navbar-fix-ff43.css", null, null);
 
 // Randomize URI to work around bug 719376:
 var stringBundle = Services.strings.createBundle('chrome://navbarheight/locale/global.properties?' + Math.random());
@@ -167,6 +169,12 @@ var windowListener = {
 				sss.unregisterSheet(x, sss.AUTHOR_SHEET);
 			}
 		});
+		if (sss.sheetRegistered(URIff41fix, sss.AUTHOR_SHEET)) {
+			sss.unregisterSheet(URIff41fix, sss.AUTHOR_SHEET);
+		}
+		if (sss.sheetRegistered(URIff43fix, sss.AUTHOR_SHEET)) {
+			sss.unregisterSheet(URIff43fix, sss.AUTHOR_SHEET);
+		}
 		
 		//Stop listening:
 		Services.wm.removeListener(this);
@@ -201,10 +209,19 @@ var prefObserver = {
 					sss.unregisterSheet(x, sss.AUTHOR_SHEET);
 				}
 			});
+			if (sss.sheetRegistered(URIff41fix, sss.AUTHOR_SHEET)) {
+				sss.unregisterSheet(URIff41fix, sss.AUTHOR_SHEET);
+			}
+			if (sss.sheetRegistered(URIff43fix, sss.AUTHOR_SHEET)) {
+				sss.unregisterSheet(URIff43fix, sss.AUTHOR_SHEET);
+			}
+			
 			let pref = Services.prefs.getIntPref("extensions.navbarheight.size");
 			let idx = sizes.indexOf(pref);
 			if (idx !== -1) {
 				sss.loadAndRegisterSheet(URIs[idx], sss.AUTHOR_SHEET);
+				sss.loadAndRegisterSheet(URIff41fix, sss.AUTHOR_SHEET);
+				sss.loadAndRegisterSheet(URIff43fix, sss.AUTHOR_SHEET);
 			}
 		}
 	}
