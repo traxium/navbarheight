@@ -45,7 +45,6 @@ function startup(data, reason)
 		if (aAddon && aAddon.isActive) {
 			// If "Tab Tree" is installed and enabled
 			// Do nothing
-			console.log("Do nothing!")
 		} else {
 			// If "Tab Tree" is not installed or disabled:
 			windowListener.startup();
@@ -144,7 +143,17 @@ var windowListener = {
 		// Add the context menu option into any existing windows:
 		let DOMWindows = Services.wm.getEnumerator("navigator:browser");
 		while (DOMWindows.hasMoreElements()) {
-			this.addOption(DOMWindows.getNext());
+			let aDOMWindow = DOMWindows.getNext();
+			if (aDOMWindow.gBrowserInit && aDOMWindow.gBrowserInit._loadHandled) {
+				// When Firefox is already opened:
+				this.addOption(aDOMWindow);
+			} else {
+				// When Firefox is starting up:
+				aDOMWindow.addEventListener('load', function onLoad(event) {
+					aDOMWindow.removeEventListener('load', onLoad, false);
+					windowListener.addOption(aDOMWindow);
+				}, false);
+			}
 		}
 		// Listen to new windows:
 		Services.wm.addListener(this);
@@ -174,8 +183,9 @@ var windowListener = {
 		let aDOMWindow = aXULWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
 		aDOMWindow.addEventListener("load", function onLoad(event) {
 			aDOMWindow.removeEventListener("load", onLoad, false);
-
-			windowListener.addOption(aDOMWindow);
+			if (aDOMWindow.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
+				windowListener.addOption(aDOMWindow);
+			}
 		}, false);
 	}
 
