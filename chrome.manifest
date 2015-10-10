@@ -1,3 +1,5 @@
-skin   navbarheight classic/1.0   chrome/skin/
+skin   navbarheight classic/1.0   chrome/skin/unix/
+skin   navbarheight classic/1.0   chrome/skin/mac/ os=Darwin
+skin   navbarheight classic/1.0   chrome/skin/win/ os=WINNT
 locale navbarheight en-US   chrome/locale/en-US/
 locale navbarheight ru      chrome/locale/ru/

@@ -138,27 +138,48 @@ var windowListener = {
 		}
 	},
 	
+	// If Firefox is starting up it can have document.querySelector("#toolbar-context-menu") === true or === false (!)
+	// because AddonManager.getAddonByID() callback is used in startup(data, reason),
+	// two subsequent Firefox restarts can produce different results.
+	// There is no such a problem when there is no callback in startup(data, reason)
+	// in that case it would be always === false
 	startup: function () {
+		console.log("Nav Bar Height: startup start... !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		
 		prefObserver.observe(null, "nsPref:changed", "extensions.navbarheight.size");
 		Services.prefs.addObserver("extensions.navbarheight.size", prefObserver, false);
 		
 		// Add the context menu option into any existing windows:
-		let DOMWindows = Services.wm.getEnumerator("navigator:browser");
+		// ATTENTION, if you add "navigator:browser" as an argument Firefox can skip windows with any type
+		// DO NOT USE getEnumerator("navigator:browser")
+		let DOMWindows = Services.wm.getEnumerator(null);
 		while (DOMWindows.hasMoreElements()) {
+			console.log("Nav Bar Height: hasMoreElements() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			let aDOMWindow = DOMWindows.getNext();
-			if (aDOMWindow.gBrowserInit && aDOMWindow.gBrowserInit._loadHandled) {
+			console.log("Nav Bar Height: windowtype: " + aDOMWindow.document.documentElement.getAttribute("windowtype"));
+			if (aDOMWindow.document.querySelector("#toolbar-context-menu")) {
+				console.log("Nav Bar Height: addOption !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				// When Firefox is already opened:
 				this.addOption(aDOMWindow);
-			} else {
+			} else if (
+				aDOMWindow.document.documentElement.getAttribute("windowtype") === null || // It's always null at Firefox startup
+				aDOMWindow.document.documentElement.getAttribute("windowtype") === "navigator:browser"
+			) {
+				console.log("Nav Bar Height: 'load' event listener added++++++++++++++++");
 				// When Firefox is starting up:
 				aDOMWindow.addEventListener('load', function onLoad(event) {
+					console.log("Nav Bar Height: 'load' event listener removed------------------");
 					aDOMWindow.removeEventListener('load', onLoad, false);
-					windowListener.addOption(aDOMWindow);
+					if (aDOMWindow.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
+						windowListener.addOption(aDOMWindow);
+					}
 				}, false);
 			}
 		}
 		// Listen to new windows:
 		Services.wm.addListener(this);
+
+		console.log("Nav Bar Height: startup end... !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	},
 	
 	shutdown: function () {
@@ -192,6 +213,7 @@ var windowListener = {
 		aDOMWindow.addEventListener("load", function onLoad(event) {
 			aDOMWindow.removeEventListener("load", onLoad, false);
 			if (aDOMWindow.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
+				console.log("Nav Bar Height: onOpenWindow navigator:browser !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				windowListener.addOption(aDOMWindow);
 			}
 		}, false);
