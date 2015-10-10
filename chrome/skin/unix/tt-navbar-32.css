@@ -23,3 +23,14 @@
 #back-button {
 	padding-left: 1px !important;
 }
+
+/* 32px fix in order to not crop the back button with a selected tab */
+
+.tab-background-start[visuallyselected=true]::after,
+.tab-background-end[visuallyselected=true]::after,
+.tab-background-start[visuallyselected=true]::before,
+.tab-background-end[visuallyselected=true]::before,
+.tab-background-middle[visuallyselected=true] {
+	padding-bottom: 1px;
+	background-clip: content-box;
+}

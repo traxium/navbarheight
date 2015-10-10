@@ -75,3 +75,14 @@ window:not([chromehidden~="toolbar"]) #urlbar-wrapper {
 #back-button {
 	padding-left: 1px !important;
 }
+
+/* 24px fix */
+
+.tab-background-start[visuallyselected=true]::after,
+.tab-background-end[visuallyselected=true]::after,
+.tab-background-start[visuallyselected=true]::before,
+.tab-background-end[visuallyselected=true]::before,
+.tab-background-middle[visuallyselected=true] {
+	padding-bottom: 1px;
+	background-clip: content-box;
+}

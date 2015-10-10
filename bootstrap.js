@@ -204,6 +204,7 @@ var windowListener = {
 		while (DOMWindows.hasMoreElements()) {
 			this.removeOption(DOMWindows.getNext());
 		}
+		console.log("Nav Bar Height: windowListener.shutdown() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	},
 
 	onOpenWindow: function (aXULWindow) {
@@ -270,11 +271,15 @@ var addonListener = {
 
 	// onEnabling doesn't fire when "Tab Tree" is installing
 	// only onInstalling fires (not two events, not onEnabling) when "Tab Tree" is installed
-	onInstalling: function (aAddon, needsRestart) {
-		if (aAddon.id === "TabsTree@traxium") {
+	// But "Tab Tree" can be installed (for example by addons.update-checker) when it's disabled and
+	// Nav Bar Height shouldn't do anything in that case:
+	onInstalled: function (aAddon) {
+		if (aAddon.id === "TabsTree@traxium" && aAddon.isActive) {
 			// Disable itself:
 			windowListener.shutdown();
-			console.log("Tab Tree is installing!");
+			console.log("Tab Tree is installed and active!!");
+		} else if (aAddon.id === "TabsTree@traxium") {
+			console.log("Tab Tree is installed and disabled!!!");
 		}
 	},
 
