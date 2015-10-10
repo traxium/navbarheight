@@ -49,10 +49,10 @@ function startup(data, reason)
 			// Do nothing
 		} else {
 			// If "Tab Tree" is not installed or disabled:
-			windowListener.startup();
+			gNavBarHeight.init();
 		}
 
-		AddonManager.addAddonListener(addonListener);
+		AddonManager.addAddonListener(gNavBarHeight);
 	});
 }
 
@@ -62,93 +62,21 @@ function shutdown(aData, aReason)
 		return;
 	}
 
-	AddonManager.removeAddonListener(addonListener);
+	AddonManager.removeAddonListener(gNavBarHeight);
 	
-	windowListener.shutdown();
+	gNavBarHeight.uninit();
 }
 
 function install(aData, aReason) { }
 function uninstall(aData, aReason) { }
 
-var windowListener = {
-	
-	addOption: function (aDOMWindow) {
-		let toolbarContextMenu = aDOMWindow.document.querySelector("#toolbar-context-menu");
-		// #toolbar-context-menu is empty when a window is just opened because its menu items removed and added on "popupshowing"
-		if (toolbarContextMenu) {
-			let sizeMenu = aDOMWindow.document.createElement("menu");
-			sizeMenu.id = "nbh-size-menu";
-			sizeMenu.setAttribute("label", stringBundle.GetStringFromName("nav_bar_height"));
-			toolbarContextMenu.insertBefore(sizeMenu, toolbarContextMenu.lastElementChild); // Before "Customize..."
-
-			let sizePopup = aDOMWindow.document.createElement("menupopup");
-			sizePopup.id = "nbh-size-popup";
-			sizeMenu.appendChild(sizePopup);
-
-			sizes.forEach((x) => {
-				let item = aDOMWindow.document.createElement("menuitem");
-				item.setAttribute("type", "checkbox");
-				item.setAttribute("label", stringBundle.GetStringFromName(x.toString()));
-				sizePopup.appendChild(item);
-			});
-			
-			let menuSeparator = aDOMWindow.document.createElement("menuseparator");
-			sizePopup.appendChild(menuSeparator);
-			
-			let itemDefault = aDOMWindow.document.createElement("menuitem");
-			itemDefault.setAttribute("type", "checkbox");
-			itemDefault.setAttribute("label", stringBundle.GetStringFromName("-1"));
-			sizePopup.appendChild(itemDefault);
-
-			sizePopup.addEventListener("popupshowing", (event) => {
-				// "for...of loops will loop over NodeList objects correctly, in browsers that support for...of (like Firefox 13 and later):"
-				for (let item of event.currentTarget.children) {
-					if (item.localName === "menuitem") {
-						item.setAttribute("checked", "false");
-					}
-				}
-				let pref = Services.prefs.getIntPref("extensions.navbarheight.size");
-				let idx = sizes.indexOf(pref);
-				if (idx === -1) {
-					event.currentTarget.lastElementChild.setAttribute("checked", "true");
-				} else {
-					event.currentTarget.children[idx].setAttribute("checked", "true");
-				}
-			});
-
-			sizePopup.addEventListener('command', (event) => {
-				if (event.currentTarget.lastElementChild === event.target) {
-					// Default Nav Bar Height:
-					Services.prefs.setIntPref("extensions.navbarheight.size", -1);
-				} else {
-					let idx = Array.prototype.indexOf.call(event.currentTarget.children, event.target);
-					Services.prefs.setIntPref("extensions.navbarheight.size", sizes[idx]);
-				}
-			}, false);
-		}
-	},
-
-	removeOption: function (aDOMWindow) {
-		if (!aDOMWindow) {
-			return;
-		}
-		let sizeMenu = aDOMWindow.document.querySelector("#nbh-size-menu");
-		if (sizeMenu) {
-			sizeMenu.parentNode.removeChild(sizeMenu);
-		}
-	},
-	
-	// If Firefox is starting up it can have document.querySelector("#toolbar-context-menu") === true or === false (!)
-	// because AddonManager.getAddonByID() callback is used in startup(data, reason),
-	// two subsequent Firefox restarts can produce different results.
-	// There is no such a problem when there is no callback in startup(data, reason)
-	// in that case it would be always === false
-	startup: function () {
+var gNavBarHeight = {
+	init: function () {
 		console.log("Nav Bar Height: startup start... !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		
-		prefObserver.observe(null, "nsPref:changed", "extensions.navbarheight.size");
-		Services.prefs.addObserver("extensions.navbarheight.size", prefObserver, false);
-		
+
+		this.observe(null, "nsPref:changed", "extensions.navbarheight.size");
+		Services.prefs.addObserver("extensions.navbarheight.size", this, false);
+
 		// Add the context menu option into any existing windows:
 		// ATTENTION, if you add "navigator:browser" as an argument Firefox can skip windows with any type
 		// DO NOT USE getEnumerator("navigator:browser")
@@ -171,7 +99,7 @@ var windowListener = {
 					console.log("Nav Bar Height: 'load' event listener removed------------------");
 					aDOMWindow.removeEventListener('load', onLoad, false);
 					if (aDOMWindow.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
-						windowListener.addOption(aDOMWindow);
+						gNavBarHeight.addOption(aDOMWindow);
 					}
 				}, false);
 			}
@@ -182,9 +110,9 @@ var windowListener = {
 		console.log("Nav Bar Height: startup end... !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	},
 	
-	shutdown: function () {
+	uninit: function () {
 		// Removing an observer that has already been removed won't do any harm:
-		Services.prefs.removeObserver("extensions.navbarheight.size", prefObserver);
+		Services.prefs.removeObserver("extensions.navbarheight.size", this);
 		URIs.forEach((x) => {
 			if (sss.sheetRegistered(x, sss.AUTHOR_SHEET)) {
 				sss.unregisterSheet(x, sss.AUTHOR_SHEET);
@@ -196,7 +124,7 @@ var windowListener = {
 		if (sss.sheetRegistered(URIff43fix, sss.AUTHOR_SHEET)) {
 			sss.unregisterSheet(URIff43fix, sss.AUTHOR_SHEET);
 		}
-		
+
 		//Stop listening:
 		Services.wm.removeListener(this);
 		// Remove the context menu option from any existing windows:
@@ -204,9 +132,77 @@ var windowListener = {
 		while (DOMWindows.hasMoreElements()) {
 			this.removeOption(DOMWindows.getNext());
 		}
-		console.log("Nav Bar Height: windowListener.shutdown() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		console.log("Nav Bar Height: gNavBarHeight.uninit() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	},
+	
+	addOption: function (aDOMWindow) {
+		let toolbarContextMenu = aDOMWindow.document.querySelector("#toolbar-context-menu");
+		// #toolbar-context-menu is empty when a window is just opened because its menu items removed and added on "popupshowing"
+		if (toolbarContextMenu) {
+			let sizeMenu = aDOMWindow.document.createElement("menu");
+			sizeMenu.id = "nbh-size-menu";
+			sizeMenu.setAttribute("label", stringBundle.GetStringFromName("nav_bar_height"));
+			toolbarContextMenu.insertBefore(sizeMenu, toolbarContextMenu.lastElementChild); // Before "Customize..."
+
+			let sizePopup = aDOMWindow.document.createElement("menupopup");
+			sizePopup.id = "nbh-size-popup";
+			sizeMenu.appendChild(sizePopup);
+
+			sizes.forEach((x) => {
+				let item = aDOMWindow.document.createElement("menuitem");
+				item.setAttribute("type", "checkbox");
+				item.setAttribute("label", stringBundle.GetStringFromName(x.toString()));
+				sizePopup.appendChild(item);
+			});
+
+			let menuSeparator = aDOMWindow.document.createElement("menuseparator");
+			sizePopup.appendChild(menuSeparator);
+
+			let itemDefault = aDOMWindow.document.createElement("menuitem");
+			itemDefault.setAttribute("type", "checkbox");
+			itemDefault.setAttribute("label", stringBundle.GetStringFromName("-1"));
+			sizePopup.appendChild(itemDefault);
+
+			sizePopup.addEventListener("popupshowing", (event) => {
+				// "for...of loops will loop over NodeList objects correctly, in browsers that support for...of (like Firefox 13 and later):"
+				for (let item of event.currentTarget.children) {
+					if (item.localName === "menuitem") {
+						item.setAttribute("checked", "false");
+					}
+				}
+				let pref = Services.prefs.getIntPref("extensions.navbarheight.size");
+				let idx = sizes.indexOf(pref);
+				if (idx === -1) {
+					event.currentTarget.lastElementChild.setAttribute("checked", "true");
+				} else {
+					event.currentTarget.children[idx].setAttribute("checked", "true");
+				}
+			});
+
+			sizePopup.addEventListener('command', (event) => {
+				if (event.target === event.currentTarget.lastElementChild) {
+					// Default Nav Bar Height:
+					Services.prefs.setIntPref("extensions.navbarheight.size", -1);
+				} else {
+					let idx = Array.prototype.indexOf.call(event.currentTarget.children, event.target);
+					Services.prefs.setIntPref("extensions.navbarheight.size", sizes[idx]);
+				}
+			}, false);
+		}
 	},
 
+	removeOption: function (aDOMWindow) {
+		if (!aDOMWindow) {
+			return;
+		}
+		let sizeMenu = aDOMWindow.document.querySelector("#nbh-size-menu");
+		if (sizeMenu) {
+			sizeMenu.parentNode.removeChild(sizeMenu);
+		}
+	},
+
+	/* nsIWindowMediatorListener */
+	
 	onOpenWindow: function (aXULWindow) {
 		// In Gecko 7.0 nsIDOMWindow2 has been merged into nsIDOMWindow interface.
 		// In Gecko 8.0 nsIDOMStorageWindow and nsIDOMWindowInternal have been merged into nsIDOMWindow interface.
@@ -215,15 +211,13 @@ var windowListener = {
 			aDOMWindow.removeEventListener("load", onLoad, false);
 			if (aDOMWindow.document.documentElement.getAttribute("windowtype") === "navigator:browser") {
 				console.log("Nav Bar Height: onOpenWindow navigator:browser !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				windowListener.addOption(aDOMWindow);
+				gNavBarHeight.addOption(aDOMWindow);
 			}
 		}, false);
-	}
-
-};
-
-var prefObserver = {
+	},
 	
+	/* nsIObserver */
+
 	observe: function(subject, topic, data) {
 		if (topic == "nsPref:changed") {
 			// unload all:
@@ -238,7 +232,7 @@ var prefObserver = {
 			if (sss.sheetRegistered(URIff43fix, sss.AUTHOR_SHEET)) {
 				sss.unregisterSheet(URIff43fix, sss.AUTHOR_SHEET);
 			}
-			
+
 			let pref = Services.prefs.getIntPref("extensions.navbarheight.size");
 			let idx = sizes.indexOf(pref);
 			if (idx !== -1) {
@@ -247,16 +241,14 @@ var prefObserver = {
 				sss.loadAndRegisterSheet(URIff43fix, sss.AUTHOR_SHEET);
 			}
 		}
-	}
+	},
 	
-};
+	/* AddonListener */
 
-var addonListener = {
-	
 	onEnabling: function (aAddon, needsRestart) {
 		if (aAddon.id === "TabsTree@traxium") {
 			// Disable itself:
-			windowListener.shutdown();
+			this.shutdown();
 			console.log("Tab Tree is enabling!");
 		}
 	},
@@ -264,7 +256,7 @@ var addonListener = {
 	onDisabled: function (aAddon, needsRestart) {
 		if (aAddon.id === "TabsTree@traxium") {
 			// Enable itself:
-			windowListener.startup();
+			this.startup();
 			console.log("Tab Tree has been disabled!");
 		}
 	},
@@ -276,19 +268,18 @@ var addonListener = {
 	onInstalled: function (aAddon) {
 		if (aAddon.id === "TabsTree@traxium" && aAddon.isActive) {
 			// Disable itself:
-			windowListener.shutdown();
+			this.shutdown();
 			console.log("Tab Tree is installed and active!!");
 		} else if (aAddon.id === "TabsTree@traxium") {
 			console.log("Tab Tree is installed and disabled!!!");
 		}
 	},
 
-	// Actually it never fires, when "Tab Tree" is removed onDisabled fires (not onUninstalled)
+	// Actually I have never seen it fires, when "Tab Tree" is removed onDisabled fires (not onUninstalled)
 	// When disabled "Tab Tree" is removed then nothing fires
 	onUninstalled: function (aAddon) {
 		if (aAddon.id === "TabsTree@traxium") {
 			console.log("Tab Tree has been uninstalled!!");
 		}
-	}
-	
+	},
 };
