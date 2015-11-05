@@ -79,6 +79,10 @@ window:not([chromehidden~="toolbar"]) #urlbar-wrapper {
 
 /* 24px fix */
 
+#nav-bar {
+	-moz-box-align: start;
+}
+
 .tab-background-start[visuallyselected=true]::after,
 .tab-background-end[visuallyselected=true]::after,
 .tab-background-start[visuallyselected=true]::before,
