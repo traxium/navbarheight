@@ -60,9 +60,8 @@ function shutdown(data, reason)
 		if (!tabTree || !tabTree.isActive) {
 			NavBarHeight.uninit();
 		}
+		Cu.unload(data.resourceURI.spec + "modules/NavBarHeight/NavBarHeight.jsm");
 	});
-	
-	Cu.unload(data.resourceURI.spec + "modules/NavBarHeight/NavBarHeight.jsm");
 }
 
 function install(aData, aReason) { }
