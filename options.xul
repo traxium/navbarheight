@@ -3,22 +3,22 @@
 <!-- This file is part of Nav Bar Height,
 - Copyright (C) 2015 Sergey Zelentsov <crayfishexterminator@gmail.com> -->
         
-<!DOCTYPE options SYSTEM "chrome://navbarheight/locale/options.dtd">
+<!DOCTYPE options SYSTEM "chrome://navbarheight/locale/navbarheight.dtd">
 
 <vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    <setting type="menulist" pref="extensions.navbarheight.size" title="&size.title;" desc="&size.desc;">
+    <setting type="menulist" pref="extensions.navbarheight.size" title="&height.title;" desc="&height.desc;">
         <menulist>
             <menupopup>
-                <menuitem value="24" label="&size.24;"/>
-                <menuitem value="26" label="&size.26;"/>
-                <menuitem value="28" label="&size.28;"/>
-                <menuitem value="30" label="&size.30;"/>
-                <menuitem value="32" label="&size.32;"/>
-                <menuitem value="34" label="&size.34;"/>
-                <menuitem value="36" label="&size.36;"/>
-                <menuitem value="38" label="&size.38;"/>
+                <menuitem value="24" label="&height.24;"/>
+                <menuitem value="26" label="&height.26;"/>
+                <menuitem value="28" label="&height.28;"/>
+                <menuitem value="30" label="&height.30;"/>
+                <menuitem value="32" label="&height.32;"/>
+                <menuitem value="34" label="&height.34;"/>
+                <menuitem value="36" label="&height.36;"/>
+                <menuitem value="38" label="&height.38;"/>
                 <menuseparator />
-                <menuitem value="-1" label="&size.-1;"/>
+                <menuitem value="-1" label="&height.-1;"/>
             </menupopup>
         </menulist>
     </setting>
