@@ -6,7 +6,7 @@
 <!DOCTYPE options SYSTEM "chrome://navbarheight/locale/navbarheight.dtd">
 
 <vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    <setting type="menulist" pref="extensions.navbarheight.size" title="&height.title;" desc="&height.desc;">
+    <setting type="menulist" pref="extensions.navbarheight.height" title="&height.title;" desc="&height.desc;">
         <menulist>
             <menupopup>
                 <menuitem value="24" label="&height.24;"/>
